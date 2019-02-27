@@ -9,7 +9,8 @@ int FaceApi::init() {
   detectNet_ = cv::dnn::readNetFromCaffe(
       "deploy.prototxt", "res10_300x300_ssd_iter_140000_fp16.caffemodel");
   // embeddingNet_ = cv::dnn::readNetFromTorch("nn4.small2.v1.t7");
-  deserialize("shape_predictor_5_face_landmarks.dat") >> shapePredict_;
+  //deserialize("shape_predictor_5_face_landmarks.dat") >> shapePredict_;
+  deserialize("shape_predictor_68_face_landmarks.dat") >> shapePredict_;
   deserialize("dlib_face_recognition_resnet_model_v1.dat") >> dlibEmbeddingNet_;
   return 0;
 }
