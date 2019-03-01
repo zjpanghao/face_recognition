@@ -101,7 +101,7 @@ float FaceApi::compareFeature(const std::vector<float> &feature,
   for (int i = 0; i < len; i++) {
     sum += (feature[i] - featureCompare[i]) * (feature[i] - featureCompare[i]);
   }
-  float f = 1 - sqrt(sum)*0.6;
+  float f = 1 - (sqrt(sum) - 0.3)/0.5;
   if (f < 0) {
     f = 0;
   } else if (f > 1) {
