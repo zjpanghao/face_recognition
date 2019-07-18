@@ -1,4 +1,4 @@
-set(BASE /home/panghao/kunlib)
+set(BASE /home/panghao/github/kunlib)
 add_definitions(-o3 -std=c++11)
 include_directories(${BASE}/include)
 link_directories(${BASE}/libs/opencv ${BASE}/libs /usr/local/lib64/)

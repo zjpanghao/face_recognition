@@ -1,5 +1,5 @@
-set(BASE /home/panghao/kunlib)
-add_definitions(-o3 -std=c++11)
+set(BASE /home/panghao/github/kunlib)
+add_definitions(-o3 -std=c++11 -DUSE_AVX_INSTRUCTIONS=ON  -DUSE_SSE2_INSTRUCTIONS=ON -DUSE_SSE4_INSTRUCTIONS=ON)
 include_directories(${BASE}/include)
 link_directories(${BASE}/libs/opencv ${BASE}/libs /usr/local/lib64/)
 add_library(kunFace SHARED src/faceApi.cpp)

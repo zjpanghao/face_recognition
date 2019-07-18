@@ -24,7 +24,7 @@ int main(int argc, char *argv[]) {
   struct timeval tv[2];
   gettimeofday(&tv[0], NULL);
   for (int i = 0; i < 1; i++) {
-    api.getLocations(m, locations1);
+    api.getLocations(m, locations1, false);
   }
   gettimeofday(&tv[1], NULL);
   for (int i = 0; i < 2; i++) {
@@ -47,6 +47,9 @@ int main(int argc, char *argv[]) {
   }
 #endif
   imwrite("a.jpg", m);
+  if (argc < 3) {
+    return 0;
+  }
   std::vector<FaceLocation> locations2;
   api.getLocations(mc, locations2);
   std::cout << "size2 :"<< locations2.size() << std::endl;
@@ -57,6 +60,7 @@ int main(int argc, char *argv[]) {
   }
   std::cout << f2.size() << std::endl;
   std::cout <<"compare result:" <<  api.compareFeature(f1, f2) << std::endl;
+#if 0
   for (auto &v : f1) {
     std::cout << v << ",";
   }
@@ -64,6 +68,7 @@ int main(int argc, char *argv[]) {
   for (auto &v : f2) {
     std::cout << v << ",";
   }
+#endif
 #if 1
   for(auto &l : locations2) {
     cv::rectangle(mc, l.rect(), cv::Scalar(0, 0, 255));
