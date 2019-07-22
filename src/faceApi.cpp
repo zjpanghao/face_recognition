@@ -28,10 +28,10 @@ int FaceApi::getLocations(const cv::Mat &img, std::vector<FaceLocation> &locatio
       int y1 = static_cast<int>(detectionMat.at<float>(i, 4) * img.rows);
       int x2 = static_cast<int>(detectionMat.at<float>(i, 5) * img.cols);
       int y2 = static_cast<int>(detectionMat.at<float>(i, 6) * img.rows);
-      if (x1 < 0 || x1 >= img.cols || x2 < 0 || x2 >= img.cols) {
+      if (x1 < 0 || x1 >= img.cols || x2 < 0 || x2 > img.cols) {
         continue;
       }
-      if (y1 < 0 || y1 >= img.rows || y2 < 0 || y2 >= img.rows) {
+      if (y1 < 0 || y1 > img.rows || y2 < 0 || y2 > img.rows) {
         continue;
       }
       if (x2 <= x1 || y2 <= y1) {
@@ -79,6 +79,13 @@ int FaceApi::getFeature(const cv::Mat &img, std::vector<float> &feature) {
   if (shape.num_parts() != 68) {
     return -2;
   }
+#if 0
+  cv::Mat m2 = img.clone();
+  for (int i = 0; i < shape.num_parts(); i++) {
+    cv::circle(m2, cv::Point(shape.part(i).x(), shape.part(i).y()), 3, cv::Scalar(0, 0, 255), -1);
+  }
+  cv::imwrite("circle.jpg", m2);
+#endif
   //cv::rectangle(m2, dlibRectangleToOpenCV(shape.get_rect()), cv::Scalar(0, 0, 255));
   auto p40 = shape.part(40);
   auto p28 = shape.part(28);
@@ -97,25 +104,20 @@ int FaceApi::getFeature(const cv::Mat &img, std::vector<float> &feature) {
   
   int leftTop = p38.y() > p39.y() ? p38.y() : p39.y();
   int rightDown = p48.y() < p47.y() ? p48.y() : p47.y();
-  if (leftTop > rightDown) {
+  if (leftTop > 1.5*rightDown) {
     return -3;
   }
    
   int leftDown = p41.y() < p42.y() ? p41.y() : p42.y();
   int rightTop = p44.y() > p45.y() ? p44.y() : p45.y();
-  if (leftDown < rightTop) {
+  if (leftDown*1.5 < rightTop) {
     return -4;
   } 
   float yaw = (float)(p43.x() - p28.x()) / (p28.x() - p40.x());
-  if (yaw < 0.68 || yaw > 1.5) {
+  if (yaw < 0.5 || yaw > 2) {
     return -5;
   }
-  //cv::Mat m2 = img.clone();
-  for (int i = 0; i < shape.num_parts(); i++) {
-  //  cv::circle(m2, cv::Point(shape.part(i).x(), shape.part(i).y()), 3, cv::Scalar(0, 0, 255), -1);
-  }
   std::cout <<"yaw" <<  yaw << std::endl;
-  //cv::imwrite("circle.jpg", m2);
   std::vector<matrix<rgb_pixel>> faces;
   matrix<rgb_pixel> faceChip;
   extract_image_chip(image, get_face_chip_details(shape,150,0.25), faceChip);
