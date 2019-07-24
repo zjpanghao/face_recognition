@@ -7,6 +7,7 @@
 #include <dlib/opencv.h>
 #include <cmath>
 int FaceApi::init() {
+  detector_ = get_frontal_face_detector();
   detectNet_ = cv::dnn::readNetFromCaffe(
       "deploy.prototxt", "res10_300x300_ssd_iter_140000_fp16.caffemodel");
   // embeddingNet_ = cv::dnn::readNetFromTorch("nn4.small2.v1.t7");
@@ -71,8 +72,8 @@ int FaceApi::getFeature(const cv::Mat &img, std::vector<float> &feature) {
   //cv::resize(sampleF32, sampleF32, cv::Size(96, 96), 0, 0, 0);
   matrix<rgb_pixel> image;
   assign_image(image, dlib::cv_image<rgb_pixel>(img));
-  auto detector = get_frontal_face_detector();
-  if (detector(image).empty()) {
+  //auto detector = get_frontal_face_detector();
+  if (detector_(image).empty()) {
     return -1;
   }
   auto shape = shapePredict_(image, dlib::rectangle(img.cols, img.rows));
@@ -83,41 +84,60 @@ int FaceApi::getFeature(const cv::Mat &img, std::vector<float> &feature) {
   cv::Mat m2 = img.clone();
   for (int i = 0; i < shape.num_parts(); i++) {
     cv::circle(m2, cv::Point(shape.part(i).x(), shape.part(i).y()), 3, cv::Scalar(0, 0, 255), -1);
+    std::stringstream ss;
+    ss << i;
+    //cv::putText(m2, ss.str(),  cv::Point(shape.part(i).x(), shape.part(i).y()), 1, 1.1, cv::Scalar(255,0,0), 1); 
+//    cv::putText(m, scoreStr, cv::Point(alertBox.x, alertBox.y) , 4, 2.5, scalar, 4);
   }
   cv::imwrite("circle.jpg", m2);
 #endif
   //cv::rectangle(m2, dlibRectangleToOpenCV(shape.get_rect()), cv::Scalar(0, 0, 255));
-  auto p40 = shape.part(40);
-  auto p28 = shape.part(28);
-  auto p43 = shape.part(43);
+  auto p36 = shape.part(36);
+  auto p45 = shape.part(45);
+  auto p33 = shape.part(33);
 
   auto p38 = shape.part(38);
-  auto p39 = shape.part(39);
+  auto p37 = shape.part(37);
   auto p47 = shape.part(47);
-  auto p48 = shape.part(48);
+  auto p46 = shape.part(46);
 
   auto p41 = shape.part(41);
-  auto p42= shape.part(42);
+  auto p40= shape.part(40);
   auto p44= shape.part(44);
-  auto p45= shape.part(45);
+  auto p43= shape.part(43);
 
-  
-  int leftTop = p38.y() > p39.y() ? p38.y() : p39.y();
-  int rightDown = p48.y() < p47.y() ? p48.y() : p47.y();
-  if (leftTop > 1.5*rightDown) {
+  auto p30= shape.part(30);
+  auto p27= shape.part(27);
+
+  double k = 20000;
+  if (p30.x() != p27.x()) {
+    k = (p30.y() - p27.y()) / (p30.x() - p27.x());
+  }
+  std::cout << "k is :" << k;
+  if (abs(k) < 5) {
+    return -6;
+  }
+  int eyeHighLeft = ((p40.y() + p41.y()) -  (p38.y() + p37.y()) )/ 2;
+  int eyeHighRight = ((p46.y() + p47.y()) -  (p43.y() + p44.y()) )/ 2;
+  int eyeHigh = (eyeHighLeft + eyeHighRight) / 2;
+
+
+  int leftTop = (p38.y() + p37.y()) / 2;
+  int rightDown = (p46.y() +  p47.y()) / 2;
+  if (leftTop > eyeHigh + rightDown) {
     return -3;
   }
    
-  int leftDown = p41.y() < p42.y() ? p41.y() : p42.y();
-  int rightTop = p44.y() > p45.y() ? p44.y() : p45.y();
-  if (leftDown*1.5 < rightTop) {
+  int leftDown = (p41.y() + p40.y()) / 2;
+  int rightTop = (p44.y() + p43.y()) / 2;
+  if (leftDown + eyeHigh < rightTop) {
     return -4;
   } 
-  float yaw = (float)(p43.x() - p28.x()) / (p28.x() - p40.x());
-  if (yaw < 0.5 || yaw > 2) {
+  float yaw = (float)(p45.x() - p33.x()) / (p33.x() - p36.x());
+  std::cout <<"yaw" <<  yaw << std::endl;
+  if (yaw < 0.55 || yaw > 1.9) {
     return -5;
   }
-  std::cout <<"yaw" <<  yaw << std::endl;
   std::vector<matrix<rgb_pixel>> faces;
   matrix<rgb_pixel> faceChip;
   extract_image_chip(image, get_face_chip_details(shape,150,0.25), faceChip);

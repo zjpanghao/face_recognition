@@ -74,6 +74,7 @@ class FaceApi {
   dlib::shape_predictor shapePredict_;
   cv::dnn::Net embeddingNet_;
   anet_type dlibEmbeddingNet_;
+  frontal_face_detector detector_;
 };
 #endif
 
