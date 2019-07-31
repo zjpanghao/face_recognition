@@ -72,6 +72,7 @@ int FaceApi::getFeature(const cv::Mat &img, std::vector<float> &feature) {
   //cv::resize(sampleF32, sampleF32, cv::Size(96, 96), 0, 0, 0);
   matrix<rgb_pixel> image;
   assign_image(image, dlib::cv_image<rgb_pixel>(img));
+  std::cout << (double)image.nc() / img.cols << std::endl;
   //auto detector = get_frontal_face_detector();
   if (detector_(image).empty()) {
     return -1;
