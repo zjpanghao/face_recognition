@@ -94,6 +94,3 @@ float FaceApi::compareFeature(const std::vector<float> &feature,
   }
   return f*100;
 }
-
-}
-
