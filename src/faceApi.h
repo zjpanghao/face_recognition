@@ -64,13 +64,14 @@ max_pool<3,3,2,2,dlib::relu<dlib::affine<dlib::con<32,7,7,2,2,
 
 class FaceApi {
  public:
-  FaceApi(){init();}
+  FaceApi(){}
   int getLocations(const cv::Mat &img, std::vector<FaceLocation> &locations, bool smallFace = false);
   int getFeature(const cv::Mat &img, std::vector<float> &feature);
   float compareFeature(const std::vector<float> &feature, 
                        const std::vector<float> &featureCompare);
- private: 
   int init();
+
+ private: 
   float confidence_{0.7};
   cv::dnn::Net detectNet_;
 #if INCLUDE_DLIB
