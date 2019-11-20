@@ -5,8 +5,6 @@
 #include <iostream>
 #include <sys/time.h>
 #include "apipool/apiPool.h"
-#include "pbase64/base64.h"
-#include "image_base64.h"
 void testFeature(FaceApi &api, cv::Mat &m) {
   std::vector<float> f1;
   int rc = api.getFeature(m, f1);
@@ -71,24 +69,6 @@ int main(int argc, char *argv[]) {
   }
   std::cout << "feature 2:" << f2.size() << std::endl;
   std::cout <<"compare result:" <<  api.compareFeature(f1, f2) << std::endl;
-#if 0
-  for (auto &v : f1) {
-    std::cout << v << ",";
-  }
-#endif
-  std::cout <<std::endl;
-  std::string f1base;
-  char *start = (char*)&f1[0];
-  std::vector<unsigned char> uf(start, start + 4 * 128);
-  Base64::getBase64().encode(uf, f1base);
-//  std::cout << "f1base:" << f1base << std::endl;
-  std::string featureBase64 = ImageBase64::encode((unsigned char*)&f2[0], f2.size() * sizeof(float));
-#if 0
-  std::cout << "f2base:" << featureBase64 << std::endl;
-  for (auto &v : f2) {
-    std::cout << v << ",";
-  }
-#endif
 #if 1
   for(auto &l : locations2) {
     cv::rectangle(mc, l.rect(), cv::Scalar(0, 0, 255));

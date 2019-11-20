@@ -8,8 +8,6 @@
 int FaceApi::init() {
   detectNet_ = cv::dnn::readNetFromCaffe(
       "deploy.prototxt", "res10_300x300_ssd_iter_140000_fp16.caffemodel");
-  // embeddingNet_ = cv::dnn::readNetFromTorch("nn4.small2.v1.t7");
-  //deserialize("shape_predictor_5_face_landmarks.dat") >> shapePredict_;
   deserialize("shape_predictor_68_face_landmarks.dat") >> shapePredict_;
   deserialize("dlib_face_recognition_resnet_model_v1.dat") >> dlibEmbeddingNet_;
   return 0;
@@ -46,10 +44,6 @@ int FaceApi::getLocations(const cv::Mat &img, std::vector<FaceLocation> &locatio
 }
 
 int FaceApi::getFeature(const cv::Mat &img, std::vector<float> &feature) {
-  //cv::Mat sampleF32(img.size(), CV_32FC3);
-  //img.convertTo(sampleF32, sampleF32.type());
-  //sampleF32 /= 255;
-  //cv::resize(sampleF32, sampleF32, cv::Size(96, 96), 0, 0, 0);
   matrix<rgb_pixel> image;
   assign_image(image, dlib::cv_image<rgb_pixel>(img));
   auto shape = shapePredict_(image, dlib::rectangle(img.cols, img.rows));
@@ -59,49 +53,29 @@ int FaceApi::getFeature(const cv::Mat &img, std::vector<float> &feature) {
   //std::vector<matrix<float,0,1>> faceDescriptors = dlibEmbeddingNet_(faceChip);
   auto faceDescriptors = dlibEmbeddingNet_(faceChip);
   std::cout << faceDescriptors.size() << std::endl;
-#if 0
-  if (faceDescriptors.size() != 1) {
-    std::cout <<"error size:" << faceDescriptors.size() << std::endl;
-    return -1;
-  }
-#endif
   auto desc = faceDescriptors;
   feature.reserve(desc.nr());
   for (int i = 0; i < desc.nr(); i++) {
     feature.push_back(desc(i, 0));;
   }
-  //std::cout << desc.nc() << "," << desc.nr() << std::endl;
-  //std::cout << "The size is:" <<desc.size() << std::endl;
   return 0;
-#if 0
-  cv::Mat image = cv::dnn::blobFromImage(img, 1.0 / 255,
-      cv::Size(96, 96), cv::Scalar(), true); 
-  embeddingNet_.setInput(image);
-  cv::Mat featureBlob = embeddingNet_.forward();
-  float *p = (float*)featureBlob.data;
-  if (!p) {
-    return -1;
-  }
-  if (featureBlob.rows * featureBlob.cols != 128) {
-    return -2;
-  }
-  feature.reserve(featureBlob.rows *featureBlob.cols);
-  for (int i= 0; i < featureBlob.rows * featureBlob.cols; i++) {
-    feature.push_back(*p++);
-  }
-  return 0;
-#endif
 }
+
 
 float FaceApi::compareFeature(const std::vector<float> &feature, 
     const std::vector<float> &featureCompare) {
+  float a = 7;
+  float b = -4;
   int len = feature.size() > featureCompare.size() ? featureCompare.size() : feature.size();
-  std::cout << "The len is" << len << std::endl;
   double sum = 0;
   for (int i = 0; i < len; i++) {
     sum += (feature[i] - featureCompare[i]) * (feature[i] - featureCompare[i]);
   }
-  float f = 1 - (sqrt(sum) - 0.3)/0.5;
+  float x = sqrt(sum);
+  std::cout << "The O distence :" <<  x;
+  float score = 1 / (1 + std::exp(a * x + b));
+  return score;
+  float f = 1 - sqrt(sum)*0.6;
   if (f < 0) {
     f = 0;
   } else if (f > 1) {
@@ -109,4 +83,3 @@ float FaceApi::compareFeature(const std::vector<float> &feature,
   }
   return f*100;
 }
-
